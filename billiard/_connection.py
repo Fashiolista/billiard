@@ -12,6 +12,7 @@ from __future__ import with_statement
 
 __all__ = ['Client', 'Listener', 'Pipe']
 
+import fcntl
 import os
 import sys
 import socket
@@ -193,6 +194,11 @@ if sys.platform != 'win32':
             s2.close()
         else:
             fd1, fd2 = os.pipe()
+            # Increase the size of both pipes to 128k
+            # 1031 is the value of F_SETPIPE_SZ, it's not a constant in fcntl yet.
+            F_SETPIPE_SZ = 1031
+            fcntl.fcntl(fd1, F_SETPIPE_SZ, 131072)
+            fcntl.fcntl(fd2, F_SETPIPE_SZ, 131072)
             c1 = _billiard.Connection(fd1, writable=False)
             c2 = _billiard.Connection(fd2, readable=False)
 
